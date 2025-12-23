@@ -57,12 +57,16 @@ export default async function apiRequestHandler(
     params = {},
     timeout,
 ) {
+    let token = window.localStorage.getItem("token")
     try {
         const config = {
             method: method.toLowerCase(),
             url,
             params,
-            headers,
+            headers: {
+                ...headers,
+                "Authorization": `Bearer ${token}`
+            },
             timeout: timeout || 10000,
         };
 
@@ -73,11 +77,7 @@ export default async function apiRequestHandler(
 
         const res = await axiosClient(config);
 
-        return {
-            success: true,
-            status: res.status,
-            data: res.data,
-        };
+        return res.data;
     } catch (error) {
         return {
             success: false,

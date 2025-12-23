@@ -16,7 +16,9 @@ const Auth = () => {
         setLoading(true)
         let response = await apiRequestHandler("POST", urls.LOGIN_USER, data);
         if (response.success) {
-            window.localStorage.setItem("token", response.data.accessToken)
+            console.log(response);
+            
+            window.localStorage.setItem("token", response.data.token)
             navigate("/c");
             reset()
         } else {
@@ -24,6 +26,7 @@ const Auth = () => {
         }
         setLoading(false);
     }, [navigate, reset]);
+
 
     const handleSignup = (data) => {
 
@@ -87,8 +90,8 @@ const Auth = () => {
                                         id="username"
                                         type="text"
                                         className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        placeholder="you@domain.com"
-                                        {...register("username", { required: "username can not be empty" })}
+                                        placeholder="you@domain.com | mobile"
+                                        {...register("login_user", { required: "username can not be empty" })}
                                     />
                                     {errors.username?.message && <p className="text-red-600 text-sm">{errors.username?.message}</p>}
                                 </div>
