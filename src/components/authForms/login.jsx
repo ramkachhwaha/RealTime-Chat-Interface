@@ -45,7 +45,7 @@ export default function Login({ setShowLoginUi }) {
                 <h2 className="text-2xl font-semibold text-gray-800 mb-4">Welcome back</h2>
                 <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
                     <div>
-                        <label htmlFor="username" className="block text-sm text-gray-700 mb-1">Email</label>
+                        <label htmlFor="username" className="block text-sm text-gray-700 mb-1">Email | mobile</label>
                         <input
                             id="username"
                             type="text"

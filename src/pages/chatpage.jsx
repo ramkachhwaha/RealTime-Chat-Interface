@@ -12,7 +12,7 @@ export default function ChatPage() {
     const [open, setOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const { users } = useSelector(store => store.userState)
+    const { chats } = useSelector(store => store.chatState)
 
     const logOut = useCallback(() => {
         window.localStorage.clear();
@@ -32,14 +32,16 @@ export default function ChatPage() {
         };
     }, []);
 
-    useEffect(() => {
-        (async () => {
-            let res = await apiRequestHandler("GET", urls.GET_USERS);
-            if (res.success) {
-                dispatch({ type: "userSlice/ADD_USERS", payload: res.data })
-            }
-        })()
+    const fetchChats = useCallback(async () => {
+        let res = await apiRequestHandler("GET", urls.GET_MY_CHATS);
+        if (res.success) {
+            dispatch({ type: "userSlice/ADD_USERS", payload: res.data })
+        }
     }, [dispatch])
+
+    useEffect(() => {
+        fetchChats()
+    }, [fetchChats])
 
 
     return (
@@ -61,6 +63,9 @@ export default function ChatPage() {
                         {open && (
                             <div className="absolute right-0 mt-2 w-40 rounded-sm shadow-lg bg-white border border-gray-400">
                                 <div className="py-2 text-sm text-gray-700">
+                                    <Link to="/c/new-chat" className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                                        New Chat
+                                    </Link>
                                     <Link to="/c/profile" className="block px-4 py-2 hover:bg-gray-100 cursor-pointer">
                                         Profile
                                     </Link>
@@ -89,7 +94,7 @@ export default function ChatPage() {
 
                 {/* Users list */}
                 <div className="flex-1 overflow-y-auto">
-                    {users.map((user) => (
+                    {chats.map((user) => (
                         <NavLink
                             to={`/c/chat/${user.id}`}
                             key={user.id}
@@ -134,7 +139,7 @@ export default function ChatPage() {
             </div>
 
             <div className="flex-1 flex flex-col">
-                <Outlet context={[...users]} />
+                <Outlet context={[...chats]} />
             </div>
 
             {

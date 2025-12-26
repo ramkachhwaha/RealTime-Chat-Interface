@@ -20,7 +20,6 @@ export default function Signup({ setShowLoginUi }) {
         let response = await apiRequestHandler("POST", endpointUrls.SIGNUP_USER, data);
         if (response.success) {
             setMessage({ success: response.message })
-            window.localStorage.setItem("token", response.data.token)
             reset()
             setShowLoginUi(true);
         } else {

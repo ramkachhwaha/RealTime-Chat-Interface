@@ -11,6 +11,7 @@ import ChatPage from './pages/chatpage'
 import Chatsection from './components/chatsection'
 import UserProfile from './pages/profilepage'
 import UserSettings from './pages/setting'
+import NewChatPage from './pages/newChatPage'
 
 function App() {
 
@@ -27,6 +28,7 @@ function App() {
 
         <Route path='/' element={<ProtectedRoute />}>
           <Route path='c' element={<ChatPage />} >
+            <Route path='new-chat' element={<NewChatPage />} />
             <Route path='chat/:userId' element={<Chatsection />} />
             <Route path='profile' element={<UserProfile />} />
             <Route path='setting' element={<UserSettings />} />

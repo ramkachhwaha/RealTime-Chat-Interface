@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userSlice from "./reducer/userSlice";
+import chatsSlice from "./reducer/chatsSlice";
 
 export default configureStore({
-    reducer : {
-        userState : userSlice
+    reducer: {
+        chatState: chatsSlice
     }
 });

@@ -1,6 +1,7 @@
 export default {
-    GET_USERS: "/users",
+    GET_MY_CHATS: "/chat",
     LOGIN_USER: "/auth/login",
-    SIGNUP_USER : "/auth/register",
-    ME : "/users/me"
+    SIGNUP_USER: "/auth/register",
+    ME: "/users/me",
+    SEARCH_USERS: "/users/search"
 }
