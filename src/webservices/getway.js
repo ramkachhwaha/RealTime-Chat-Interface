@@ -53,8 +53,8 @@ export default async function apiRequestHandler(
     method = "get",
     url,
     data = {},
-    headers = {},
     params = {},
+    headers = {},
     timeout,
 ) {
     let token = window.localStorage.getItem("token")
