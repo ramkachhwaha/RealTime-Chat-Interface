@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FiMoreVertical, FiPaperclip, FiSend } from "react-icons/fi";
 import { IoReturnUpBack } from "react-icons/io5";
 import { MdCall, MdVideocam } from "react-icons/md";
-import { useNavigate, useOutletContext, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import { getMyChatMessages } from "../webservices/chatApi/apis";
+import { toast } from "react-toastify";
 
 export default function Chatsection() {
     // Ref for auto-scroll
-    const { userId } = useParams();
+    const { chatId } = useParams();
     const messagesEndRef = useRef(null);
-    const users = useOutletContext();
     const [selectedUser, setSelectedUser] = useState({})
     const navigate = useNavigate()
     const [messages, setMessages] = useState([
@@ -17,6 +18,20 @@ export default function Chatsection() {
         { id: 3, text: "I’m good, thanks!", status: "read", sender: "me" },
     ]);
     const [newMsg, setNewMsg] = useState("");
+
+    const fetchChatMessages = useCallback(async () => {
+        try {
+            let response = await getMyChatMessages(chatId);
+            if (response.success) {
+                setMessages(response.data);
+                setSelectedUser(response.data[1].sender)
+            } else {
+                setMessages([])
+            }
+        } catch (error) {
+            toast.error(error.messages || "Server Error")
+        }
+    }, [chatId])
 
     const handleSend = () => {
         if (newMsg.trim() === "") return;
@@ -44,11 +59,9 @@ export default function Chatsection() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-
     useEffect(() => {
-        let user = users?.find(item => item.id == userId);
-        setSelectedUser(user)
-    }, [userId, users])
+        fetchChatMessages()
+    }, [fetchChatMessages]);
 
     return (
         <>
@@ -57,12 +70,12 @@ export default function Chatsection() {
                 <div className="flex items-center gap-5">
                     <IoReturnUpBack className="text-2xl cursor-pointer" onClick={() => navigate("/c")} />
                     <img
-                        src={selectedUser?.image}
+                        src={selectedUser?.avatar}
                         alt="dp"
                         className="w-12 h-12 rounded-full border-2 border-blue-600"
                     />
                     <div>
-                        <h2 className="font-semibold">{selectedUser?.firstName} {selectedUser?.lastName}</h2>
+                        <h2 className="font-semibold">{selectedUser?.user_name}</h2>
                         <p
                             className={`text-xs ${selectedUser?.online ? "text-green-500" : "text-gray-400"
                                 }`}

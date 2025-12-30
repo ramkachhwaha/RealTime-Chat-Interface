@@ -29,7 +29,7 @@ function App() {
         <Route path='/' element={<ProtectedRoute />}>
           <Route path='c' element={<ChatPage />} >
             <Route path='new-chat' element={<NewChatPage />} />
-            <Route path='chat/:userId' element={<Chatsection />} />
+            <Route path='chat/:chatId' element={<Chatsection />} />
             <Route path='profile' element={<UserProfile />} />
             <Route path='setting' element={<UserSettings />} />
           </Route>

@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FiMoreVertical, FiSearch } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import apiRequestHandler from "../webservices/getway";
-import urls from "../webservices/endpointUrls"
+import { getMyChats } from "../webservices/chatApi/apis";
+import { toast } from "react-toastify";
 
 export default function ChatPage() {
     const dispatch = useDispatch();
@@ -12,7 +12,7 @@ export default function ChatPage() {
     const [open, setOpen] = useState(false);
     const menuRef = useRef(null);
 
-    const { chats } = useSelector(store => store.chatState)
+    const { chats } = useSelector(store => store.chatState);
 
     const logOut = useCallback(() => {
         window.localStorage.clear();
@@ -33,9 +33,16 @@ export default function ChatPage() {
     }, []);
 
     const fetchChats = useCallback(async () => {
-        let res = await apiRequestHandler("GET", urls.GET_MY_CHATS);
-        if (res.success) {
-            dispatch({ type: "userSlice/ADD_USERS", payload: res.data })
+        try {
+            let res = await getMyChats()
+            if (res.success) {
+                dispatch({ type: "chatsSlice/SET_MY_CHATS", payload: res.data })
+            } else {
+                toast.error(res.message)
+            }
+
+        } catch (error) {
+            toast.error(error.message || "Server Error")
         }
     }, [dispatch])
 
@@ -94,52 +101,55 @@ export default function ChatPage() {
 
                 {/* Users list */}
                 <div className="flex-1 overflow-y-auto">
-                    {chats.map((user) => (
-                        <NavLink
-                            to={`/c/chat/${user.id}`}
-                            key={user.id}
-                            className={({ isActive }) =>
-                                `flex items-center p-3 cursor-pointer transition-all duration-200 
+                    {chats.map((chat, index) => {
+                        let user = chat.members[1];
+                        return (
+                            <NavLink
+                                to={`/c/chat/${chat._id}`}
+                                key={index}
+                                className={({ isActive }) =>
+                                    `flex items-center p-3 cursor-pointer transition-all duration-200 
         hover:bg-gray-100 rounded-lg 
         ${isActive ? "bg-blue-100" : ""}`
-                            }
-                        >
-                            {/* User DP */}
-                            <div className="relative">
-                                <img
-                                    src={user.image}
-                                    alt="dp"
-                                    className="w-12 h-12 border-2 border-blue-600 rounded-full"
-                                />
-                                {/* Online status indicator dot */}
-                                <span
-                                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white 
+                                }
+                            >
+                                {/* User DP */}
+                                <div className="relative">
+                                    <img
+                                        src={chat.isGroupChat ? chat.groupIcon : user.avatar}
+                                        alt="dp"
+                                        className="w-12 h-12 border-2 border-blue-600 rounded-full"
+                                    />
+                                    {/* Online status indicator dot */}
+                                    <span
+                                        className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white 
           ${user.online ? "bg-green-500" : "bg-gray-400"}`}
-                                />
-                            </div>
+                                    />
+                                </div>
 
-                            {/* User details */}
-                            <div className="flex flex-col ml-3 flex-1">
-                                <span className="font-medium text-gray-800">{user.firstName} {user.lastName}</span>
-                                <span className="text-xs text-gray-500 truncate max-w-[180px]">
-                                    {user.lastMessage || (user.online ? "Online" : "Offline")}
-                                </span>
-                            </div>
+                                {/* User details */}
+                                <div className="flex flex-col ml-3 flex-1">
+                                    <span className="font-medium text-gray-800">{chat.isGroupChat ? chat.groupName : user.user_name}</span>
+                                    <span className="text-xs text-gray-500 truncate max-w-[180px]">
+                                        {chat.lastMessage.message}
+                                    </span>
+                                </div>
 
-                            {/* Unread count badge */}
-                            {user.unread > 0 && (
-                                <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                                    {user.unread}
-                                </span>
-                            )}
-                        </NavLink>
-                    ))}
+                                {/* Unread count badge */}
+                                {chat.unreadCounts.length > 0 && (
+                                    <span className="ml-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                        {chat.unreadCounts.length}
+                                    </span>
+                                )}
+                            </NavLink>
+                        )
+                    })}
                 </div>
 
             </div>
 
             <div className="flex-1 flex flex-col">
-                <Outlet context={[...chats]} />
+                <Outlet />
             </div>
 
             {
