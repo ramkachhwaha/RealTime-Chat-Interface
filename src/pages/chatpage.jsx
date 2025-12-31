@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FiMoreVertical, FiSearch } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
-import { getMyChats } from "../webservices/chatApi/apis";
+import { getChatAccess, getMyChats } from "../webservices/chatApi/apis";
 import { toast } from "react-toastify";
 
 export default function ChatPage() {
@@ -44,7 +44,20 @@ export default function ChatPage() {
         } catch (error) {
             toast.error(error.message || "Server Error")
         }
-    }, [dispatch])
+    }, [dispatch]);
+
+    const getReciver = useCallback(async (id) => {
+        try {
+            let response = await getChatAccess(id);
+            if (response.success) {
+                navigate(`/c/chat/${response.data._id}`, { state: response.data.reciver })
+            } else {
+                toast.error(response.message)
+            }
+        } catch (error) {
+            toast.error(error.message || "Server Error")
+        }
+    }, [navigate])
 
     useEffect(() => {
         fetchChats()
@@ -106,6 +119,7 @@ export default function ChatPage() {
                         return (
                             <NavLink
                                 to={`/c/chat/${chat._id}`}
+                                onClick={() => getReciver(user._id)}
                                 key={index}
                                 className={({ isActive }) =>
                                     `flex items-center p-3 cursor-pointer transition-all duration-200 

@@ -1,5 +1,7 @@
+/* eslint-disable jsx-a11y/img-redundant-alt */
 import React, { useState, useRef } from "react";
 import { IoReturnUpBack } from "react-icons/io5";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
 // UserProfile.jsx
@@ -12,18 +14,22 @@ import { useNavigate } from "react-router";
 // - Placeholder save handlers where you can call your API
 
 export default function UserProfile({ user = {} }) {
-    const navigate = useNavigate()
+
+    const { loggedUser } = useSelector(store => store.user);
+
+    const navigate = useNavigate();
+
     const [form, setForm] = useState({
-        fullName: user.fullName || "",
-        username: user.username || "",
-        email: user.email || "",
-        bio: user.bio || "",
-        phone: user.phone || "",
-        location: user.location || "",
+        user_name: loggedUser.user_name || "",
+        gender: loggedUser.gender || "",
+        email: loggedUser.email || "",
+        bio: loggedUser.bio || "",
+        phone: loggedUser.phone || "",
+        address: loggedUser.address || "",
     });
 
     const [avatarFile, setAvatarFile] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState(user.avatarUrl || "");
+    const [avatarPreview, setAvatarPreview] = useState(loggedUser.avatar || "");
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -71,11 +77,11 @@ export default function UserProfile({ user = {} }) {
         try {
             // Example: construct FormData if you need to upload avatar
             const payload = new FormData();
-            payload.append("fullName", form.fullName);
-            payload.append("username", form.username);
+            payload.append("user_name", form.user_name);
+            payload.append("gender", form.gender);
             payload.append("bio", form.bio);
             payload.append("phone", form.phone);
-            payload.append("location", form.location);
+            payload.append("address", form.address);
             if (avatarFile) payload.append("avatar", avatarFile);
 
             // TODO: replace URL with your API endpoint
@@ -153,7 +159,6 @@ export default function UserProfile({ user = {} }) {
                             <div className="flex flex-col items-center md:items-start">
                                 <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
                                     {avatarPreview ? (
-                                        // eslint-disable-next-line jsx-a11y/img-redundant-alt
                                         <img src={avatarPreview} alt="Avatar preview" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-gray-400">No photo</span>
@@ -184,8 +189,8 @@ export default function UserProfile({ user = {} }) {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Full name</label>
                                         <input
-                                            name="fullName"
-                                            value={form.fullName}
+                                            name="user_name"
+                                            value={form.user_name}
                                             onChange={handleChange}
                                             className="mt-1 px-2 py-2 block w-full rounded border border-gray-200 focus:outline-blue-500"
                                             placeholder="Your full name"
@@ -193,14 +198,18 @@ export default function UserProfile({ user = {} }) {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Username</label>
-                                        <input
-                                            name="username"
-                                            value={form.username}
+                                        <label className="block text-sm font-medium text-gray-700">Gender</label>
+                                        <select
+                                            name="gender"
+                                            value={form.gender}
                                             onChange={handleChange}
                                             className="mt-1 px-2 py-2 block w-full rounded border border-gray-200 focus:outline-blue-500"
-                                            placeholder="@username"
-                                        />
+                                        >
+                                            <option value="">-Select-</option>
+                                            <option value="male">Male</option>
+                                            <option value="female">Female</option>
+                                            <option value="other">Other</option>
+                                        </select>
                                     </div>
 
                                     <div>
@@ -238,10 +247,10 @@ export default function UserProfile({ user = {} }) {
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700">Location</label>
+                                        <label className="block text-sm font-medium text-gray-700">Address</label>
                                         <input
                                             name="location"
-                                            value={form.location}
+                                            value={form.address}
                                             onChange={handleChange}
                                             className="mt-1 px-2 py-2 block w-full rounded border border-gray-200 focus:outline-blue-500"
                                             placeholder="City, Country"
