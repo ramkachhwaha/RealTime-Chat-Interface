@@ -6,5 +6,6 @@ export default {
     // chat urls
     GET_MY_CHATS: "/chat",
     GET_CHAT_MESSAGES: "/chat/m/", // chat id
-    GET_CHAT_ACCESS  : "/chat/access"
+    GET_CHAT_ACCESS  : "/chat/access",
+    SEND_MESSAGE  : "/chat/send-message"
 }

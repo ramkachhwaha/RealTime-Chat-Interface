@@ -6,6 +6,7 @@ import { debounce } from '../utils/debounce';
 import apiRequestHandler from '../webservices/getway';
 import endpointUrls from '../webservices/endpointUrls';
 import { toast } from 'react-toastify';
+import { getChatAccess } from '../webservices/chatApi/apis';
 
 export default function NewChatPage() {
     const navigate = useNavigate()
@@ -31,7 +32,22 @@ export default function NewChatPage() {
     let debounceSearch = debounce(searchUser, 500);
 
 
-    console.log(searchResults);
+    const getReciver = useCallback(async (id) => {
+        try {
+            let response = await getChatAccess(id);
+            if (response.success) {
+                let state = {
+                    name: response.data.isGroupChat ? response.data.groupName : response.data.user_name,
+                    icon: response.data.isGroupChat ? response.data.groupIcon : response.data.avatar
+                }
+                navigate(`/c/chat/${response.data._id}`, { state });
+            } else {
+                toast.error(response.message)
+            }
+        } catch (error) {
+            toast.error(error.message || "Server Error")
+        }
+    }, [navigate])
 
 
     return (
@@ -62,16 +78,16 @@ export default function NewChatPage() {
                             type="text"
                             placeholder="Search users..."
                             className="w-full outline-none bg-transparent"
-                            onChange={(e)=>debounceSearch(e.target.value)}
+                            onChange={(e) => debounceSearch(e.target.value)}
                         />
                     </div>
                 </div>
 
                 {/* <!-- User List --> */}
                 <ul className="space-y-2 p-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {searchResults && searchResults.map((item, ins) => (
-                        <li className="user" data-name="Rahul Sharma" key={ins}>
-                            <div onclick="selectChat('Rahul Sharma','user')"
+                    {searchResults && searchResults.map((item) => (
+                        <li className="user" key={item._id}>
+                            <div onClick={() => getReciver(item._id)}
                                 className="flex items-center justify-between p-3 border border-gray-400 rounded hover:bg-indigo-50 cursor-pointer">
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 bg-indigo-500 text-white rounded-full flex items-center justify-center capitalize">{(item.user_name)[0]}</div>

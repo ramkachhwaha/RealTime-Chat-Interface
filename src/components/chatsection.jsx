@@ -3,19 +3,17 @@ import { FiMoreVertical, FiPaperclip, FiSend } from "react-icons/fi";
 import { IoReturnUpBack } from "react-icons/io5";
 import { MdCall, MdVideocam } from "react-icons/md";
 import { useLocation, useNavigate, useParams } from "react-router";
-import { getMyChatMessages } from "../webservices/chatApi/apis";
+import { getMyChatMessages, sendMessageApi } from "../webservices/chatApi/apis";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 export default function Chatsection() {
     // Ref for auto-scroll
     const { chatId } = useParams();
+    const { loggedUser } = useSelector(store => store.user)
     const messagesEndRef = useRef(null);
     const navigate = useNavigate()
-    const [messages, setMessages] = useState([
-        { id: 1, text: "Hello!", status: "sent", sender: "other" },
-        { id: 2, text: "How are you?", status: "delivered", sender: "other" },
-        { id: 3, text: "I’m good, thanks!", status: "read", sender: "me" },
-    ]);
+    const [messages, setMessages] = useState([])
     const [newMsg, setNewMsg] = useState("");
 
     const { state } = useLocation();
@@ -34,25 +32,43 @@ export default function Chatsection() {
         }
     }, [chatId])
 
-    const handleSend = () => {
+    const handleSend = useCallback(async () => {
         if (newMsg.trim() === "") return;
-        setMessages([
-            ...messages,
-            { id: messages.length + 1, text: newMsg, status: "sent", sender: "me", time: (new Date()) },
-        ]);
-        setNewMsg("");
-    };
 
-    const getStatusIcon = (status) => {
-        if (status === "sent") return <span className="text-xs">
-            <span className="text-lg">✓</span>
-        </span>;
-        if (status === "delivered") return <span className="text-xs">
-            <span className="text-lg">✓✓</span>
-        </span>;
-        if (status === "read") return <span className="text-xs">
-            <span className="text-blue-800 text-lg">✓✓</span>
-        </span>;
+        let data = {
+            message: newMsg,
+            chatId
+        }
+
+        try {
+            let response = await sendMessageApi(data);
+
+            if (response.success) {
+                setNewMsg("");
+                setMessages(prev => [...prev, response.data]);
+            } else {
+                toast.error(response.message);
+            }
+        } catch (error) {
+            toast.error(error.message || "Server Error")
+        }
+
+    }, [chatId, newMsg]);
+
+    const getStatusIcon = ({ seen, delivered }) => {
+        if (seen.length) {
+            return <span className="text-xs">
+                <span className="text-blue-800 text-lg">✓✓</span>
+            </span>;
+        } else if (delivered) {
+            return <span className="text-xs">
+                <span className="text-lg">✓✓</span>
+            </span>
+        } else {
+            return <span className="text-xs">
+                <span className="text-lg">✓</span>
+            </span>;
+        }
     };
 
     // Auto scroll when messages update
@@ -64,6 +80,7 @@ export default function Chatsection() {
         fetchChatMessages()
     }, [fetchChatMessages]);
 
+
     return (
         <>
             {/* Header */}
@@ -71,12 +88,12 @@ export default function Chatsection() {
                 <div className="flex items-center gap-5">
                     <IoReturnUpBack className="text-2xl cursor-pointer" onClick={() => navigate("/c")} />
                     <img
-                        src={state?.avatar}
+                        src={state?.icon}
                         alt="dp"
                         className="w-12 h-12 rounded-full border-2 border-blue-600"
                     />
                     <div>
-                        <h2 className="font-semibold">{state?.user_name}</h2>
+                        <h2 className="font-semibold">{state?.name}</h2>
                         <p
                             className={`text-xs ${state?.online ? "text-green-500" : "text-gray-400"
                                 }`}
@@ -95,24 +112,24 @@ export default function Chatsection() {
 
             {/* Messages */}
             <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-                {messages.map((msg,imd) => (
+                {messages.map((msg) => (
                     <div
-                        key={imd}
-                        className={`flex mb-2 ${msg.sender === "me" ? "justify-end" : "justify-start"
+                        key={msg._id}
+                        className={`flex mb-2 ${msg.sender._id === loggedUser._id ? "justify-end" : "justify-start"
                             }`}
                     >
                         <div
-                            className={`p-2 rounded-lg max-w-lg ${msg.sender === "me"
+                            className={`p-2 rounded-lg max-w-lg ${msg.sender._id === loggedUser
                                 ? "bg-green-400 text-white"
                                 : "bg-white border"
                                 }`}
                         >
                             <p className="whitespace-pre-wrap break-words">
-                                {msg.text}
+                                {msg.message}
+                                <span className={`text-xs ml-3 text-right mt-1 opacity-80`}>
+                                    {msg.sender._id === loggedUser._id && getStatusIcon({ seen: msg.seen, delivered: msg.delivered })}
+                                </span>
                             </p>
-                            <span className={`text-xs block ml-3 text-right mt-1 opacity-80`}>
-                                {msg.sender === "me" ? getStatusIcon(msg.status) : ""}
-                            </span>
                         </div>
                     </div>
                 ))}

@@ -9,6 +9,9 @@ const chatsSlice = createSlice({
     reducers: {
         SET_MY_CHATS: (state, action) => {
             state.chats = action.payload
+        },
+        ADD_NEW_CHAT: (state, action) => {
+            state.chats.unshift(action.payload)
         }
     }
 });
